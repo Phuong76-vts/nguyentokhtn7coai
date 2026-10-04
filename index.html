@@ -1,0 +1,563 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lò Nguyên Tố</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: phòng thí nghiệm ban đêm – ô nguyên tố kiểu bảng tuần hoàn là "thẻ nhận dạng" xuyên suốt; proton đỏ, neutron xám, electron xanh.
+   Một giao diện tối có chủ ý (để hạt và quỹ đạo phát sáng trên máy chiếu), màu đặt tường minh. */
+:root{
+  --bg:#08161B; --bg2:#0D2229; --bg3:#13303A; --line:rgba(150,220,215,.18); --line2:rgba(150,220,215,.35);
+  --ink:#EAF6F4; --dim:#9DBFBA; --dim2:#6E918C;
+  --p:#FF5D5D; --n:#A9B4B8; --e:#4FD1FF; --mint:#5EEAD4; --amber:#FFC857; --violet:#B69CFF;
+  --ok:#5EEAD4; --bad:#FF7A7A;
+  --display:'Lexend', 'Segoe UI', Arial, sans-serif; --body:'Be Vietnam Pro', 'Segoe UI', Arial, sans-serif; --mono:'JetBrains Mono', Consolas, monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(120% 80% at 80% -10%,#123A44 0,transparent 55%),radial-gradient(90% 70% at -10% 110%,#1A2B4A 0,transparent 55%),var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;min-height:100vh}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:18px;padding-block:18px 60px}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.1;text-wrap:balance}
+.panel{background:rgba(13,34,41,.85);border:1px solid var(--line2);border-radius:14px;padding:16px;min-width:0}
+.btn{font:700 15px var(--body);padding:9px 16px;border-radius:999px;border:1.5px solid var(--mint);background:transparent;color:var(--mint);transition:background .15s}
+.btn:hover{background:rgba(94,234,212,.12)}
+.btn.pri{background:var(--mint);color:#06201D}
+.btn.pri:hover{background:#86F2E0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.fb{min-height:1.5em;font-weight:700}.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.dim{color:var(--dim)} .mono{font-family:var(--mono)}
+.chip{display:inline-block;font:700 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mint);border:1px solid rgba(94,234,212,.5);border-radius:999px;padding:2px 10px}
+
+/* element tile (periodic style) */
+.tile{position:relative;display:grid;grid-template-rows:auto 1fr auto auto;width:150px;height:170px;padding:10px 12px;border-radius:12px;border:2px solid var(--mint);background:linear-gradient(160deg,rgba(94,234,212,.16),rgba(94,234,212,.03));text-align:left}
+.tile .z{font:700 18px var(--mono);color:var(--mint)}
+.tile .sym{font:800 64px/1 var(--display);align-self:center}
+.tile .nm{font-weight:700;font-size:15px}
+.tile .ms{font:600 12px var(--mono);color:var(--dim)}
+.tile .say,.pt .say{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1.5px solid var(--mint);background:rgba(94,234,212,.12);color:var(--mint);display:grid;place-items:center;padding:0}
+.pt{position:relative}.pt .say{top:3px;right:3px;width:22px;height:22px}.pt .say svg{width:12px;height:12px}
+.tile.empty{border-style:dashed;border-color:var(--dim2);background:transparent}
+.tile.empty .sym{color:var(--dim2)}
+
+/* header + nav */
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px}
+.brand{display:flex;gap:14px;align-items:center}
+.brand .mini{width:62px;height:62px;border-radius:10px;border:2px solid var(--mint);display:grid;grid-template-rows:auto 1fr;padding:4px 7px;background:rgba(94,234,212,.08)}
+.brand .mini small{font:700 11px var(--mono);color:var(--mint)}
+.brand .mini b{font:800 28px/1 var(--display);align-self:center}
+.brand h1{font-size:clamp(30px,5.4vw,50px);font-weight:800}
+.brand p{margin:0;font:600 13px var(--mono);color:var(--dim)}
+.score{font:700 14px var(--mono);color:var(--dim);border:1px solid var(--line2);border-radius:999px;padding:6px 14px}
+.score b{color:var(--amber);font-size:18px}
+nav.rooms{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+nav.rooms button{font:700 14px var(--body);padding:8px 14px;border-radius:999px;border:1px solid var(--line2);background:transparent}
+nav.rooms button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+nav.rooms .n{font-family:var(--mono);opacity:.7;margin-right:6px}
+.view[hidden]{display:none}
+details.tnote{margin-top:14px;border:1px dashed var(--dim2);border-radius:10px;padding:10px 14px;font-size:14px;color:var(--dim)}
+details.tnote summary{font-weight:800;color:var(--ink);cursor:pointer}
+
+/* hub */
+.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:center;margin-bottom:18px}
+.hero h2{font-size:clamp(28px,4.4vw,44px);font-weight:800}
+.hero p{color:var(--dim);max-width:60ch}
+.quote{font-family:var(--display);font-size:20px;color:var(--amber);border-left:4px solid var(--amber);padding-left:14px;margin:14px 0}
+#heroAtom{width:100%;height:auto;max-height:340px}
+.hub{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px}
+.room{text-align:left;display:flex;gap:14px;align-items:flex-start}
+.room:hover{border-color:var(--mint)}
+.room .t{width:58px;height:66px;flex:none;border-radius:8px;border:2px solid var(--mint);display:grid;grid-template-rows:auto 1fr;padding:3px 6px}
+.room .t small{font:700 11px var(--mono);color:var(--mint)}
+.room .t b{font:800 24px/1 var(--display);align-self:center}
+.room h3{font-size:20px}
+.room p{margin:4px 0 0;color:var(--dim);font-size:14px}
+.room .st{font:700 12px var(--mono);color:var(--amber);margin-top:6px;display:block}
+
+/* forge */
+.forge{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+#atom{width:100%;height:auto;display:block}
+.orbit{transform-box:view-box;transform-origin:250px 250px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ctrls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.ctrl{border:1px solid var(--line2);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.ctrl .lb{font-weight:800;display:flex;align-items:center;gap:6px}
+.ctrl .dot{width:14px;height:14px;border-radius:50%}
+.ctrl .num{font:800 34px/1 var(--display)}
+.ctrl .pm{display:flex;gap:8px}
+.ctrl .pm button{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line2);background:rgba(234,246,244,.05);font:800 22px var(--display)}
+.ctrl .pm button:hover{border-color:var(--ink)}
+.idrow{display:flex;gap:14px;align-items:stretch}
+.idinfo{display:flex;flex-direction:column;gap:6px;justify-content:center;font-size:15px}
+.idinfo b{color:var(--amber)}
+.missions{display:flex;flex-direction:column;gap:6px}
+.missions button{display:flex;gap:10px;align-items:center;text-align:left;font:600 14px var(--body);padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:rgba(234,246,244,.03)}
+.missions button.cur{border-color:var(--amber);background:rgba(255,200,87,.08)}
+.missions .s{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid var(--dim2);display:grid;place-items:center;font-size:12px;font-weight:800}
+.missions button.done .s{background:var(--amber);border-color:var(--amber);color:#1A1200}
+
+/* sort cards */
+.cards{display:flex;flex-wrap:wrap;gap:10px;min-height:76px}
+.pcard{width:96px;padding:8px;border-radius:10px;border:1.5px solid var(--line2);background:var(--bg3);text-align:left;transition:transform .15s}
+.pcard .l{font:800 22px var(--display)}
+.pcard .v{font:700 13px var(--mono)}
+.pcard .v .pp{color:var(--p)} .pcard .v .nn{color:var(--n)}
+.pcard.sel{border-color:var(--amber);transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.35)}
+.boxes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+.box{min-height:150px;border-radius:12px;border:2px dashed var(--line2);background:rgba(0,0,0,.18);padding:8px;display:flex;flex-direction:column;gap:6px;text-align:left}
+.box:hover{border-color:var(--ink)}
+.box .hd{font:700 13px var(--mono);color:var(--dim)}
+.box .in{display:flex;flex-wrap:wrap;gap:6px}
+.box .in span{font:700 13px var(--mono);padding:3px 8px;border-radius:6px;background:var(--bg3);border:1px solid var(--line2)}
+.box.good{border-style:solid;border-color:var(--ok)}
+.box.badb{border-style:solid;border-color:var(--bad)}
+.box .reveal{font:800 18px var(--display);color:var(--mint)}
+
+/* symbols */
+.sym-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.slot{display:flex;gap:6px;min-height:84px;align-items:center;justify-content:center;border:2px dashed var(--line2);border-radius:12px;padding:8px;font:800 56px/1 var(--display)}
+.slot span{min-width:30px;text-align:center}
+.letters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.letters button{width:52px;height:52px;border-radius:10px;border:1.5px solid var(--line2);background:var(--bg3);font:800 26px var(--display)}
+.letters button:hover{border-color:var(--ink)}
+.rule{background:rgba(255,200,87,.08);border:1px solid rgba(255,200,87,.4);border-radius:12px;padding:12px 14px;font-size:15px}
+.rule b{color:var(--amber)}
+.spot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.spot .c{border:1.5px solid var(--line2);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(0,0,0,.15)}
+.spot .c .w{font:800 34px/1 var(--display)}
+.spot .c .nm{font-size:13px;color:var(--dim)}
+.spot .c .bt{display:flex;gap:6px}
+.spot .c .bt button{font:700 13px var(--body);padding:5px 10px;border-radius:999px;border:1px solid var(--line2);background:transparent}
+.spot .c.ok{border-color:var(--ok)} .spot .c.no{border-color:var(--bad)}
+.spot .c .why{font-size:12px;color:var(--dim);text-align:center;min-height:1.2em}
+
+/* memory */
+.mem{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:10px}
+.mc{display:block;width:100%;aspect-ratio:3/4;perspective:800px;border:0;background:none;padding:0}
+.mc .in{display:block;position:relative;width:100%;height:100%;transition:transform .45s;transform-style:preserve-3d}
+.mc.open .in,.mc.got .in{transform:rotateY(180deg)}
+.mc .f,.mc .b{position:absolute;inset:0;backface-visibility:hidden;border-radius:10px;display:grid;place-items:center;text-align:center;padding:6px}
+.mc .f{background:repeating-linear-gradient(45deg,#123A44 0 8px,#0F2F38 8px 16px);border:1.5px solid var(--line2);font:800 22px var(--display);color:var(--mint)}
+.mc .b{transform:rotateY(180deg);background:var(--bg3);border:2px solid var(--mint)}
+.mc .b .big{font:800 34px/1 var(--display)}
+.mc .b .sm{font-weight:700;font-size:14px}
+.mc.got .b{border-color:var(--amber);background:rgba(255,200,87,.12)}
+.ptable{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.pt{border-radius:8px;border:1px solid var(--line2);padding:4px 6px;background:rgba(0,0,0,.18);display:grid;grid-template-rows:auto 1fr auto}
+.pt small{font:700 10px var(--mono);color:var(--dim)}
+.pt b{font:800 20px/1 var(--display);margin:4px 0}
+.pt span{font-size:11px;line-height:1.2;color:var(--dim)}
+.tablewrap{overflow-x:auto}
+.tablewrap .ptable{min-width:620px}
+
+/* around */
+.around{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+#body{width:100%;height:auto;display:block}
+.waffle{display:grid;grid-template-columns:repeat(20,1fr);gap:2px;max-width:340px}
+.waffle i{aspect-ratio:1;border-radius:3px}
+.legend{display:flex;flex-direction:column;gap:6px;font-size:15px}
+.legend div{display:grid;grid-template-columns:16px 1fr auto auto;gap:10px;align-items:center}
+.legend .sw{width:14px;height:14px;border-radius:3px}
+.legend .kg{font:700 14px var(--mono);color:var(--amber);min-width:70px;text-align:right}
+.legend .pc{font:600 13px var(--mono);color:var(--dim);min-width:52px;text-align:right}
+input[type=range]{width:100%;accent-color:var(--mint)}
+#things{width:100%;height:auto;display:block;border-radius:12px}
+.thing{cursor:pointer}
+.thing .hl{fill:none;stroke:var(--amber);stroke-width:3;stroke-dasharray:6 5;opacity:.5}
+.thing:hover .hl,.thing.sel .hl{opacity:1}
+.thing.seen .hl{stroke:var(--mint);stroke-dasharray:none;opacity:1}
+
+/* quiz */
+.quiz{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.qhead{display:flex;justify-content:space-between;font:700 14px var(--mono);color:var(--dim)}
+.qbar{height:6px;background:rgba(234,246,244,.12);border-radius:3px;overflow:hidden}
+.qbar i{display:block;height:100%;background:var(--amber);transition:width 1s linear}
+.qtext{font:700 clamp(20px,3.4vw,28px)/1.25 var(--display)}
+.qopts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qopts button{font:700 17px var(--body);text-align:left;padding:14px 16px;border-radius:12px;border:1.5px solid var(--line2);background:rgba(234,246,244,.04);display:flex;gap:12px;align-items:center}
+.qopts button:hover{border-color:var(--ink)}
+.qopts .k{font-family:var(--mono);color:var(--amber)}
+.qopts button.right{border-color:var(--ok);background:rgba(94,234,212,.14)}
+.qopts button.wrong{border-color:var(--bad);background:rgba(255,122,122,.12)}
+.cert{background:#F7FBFA;color:#08161B;border-radius:16px;padding:28px;text-align:center;border:6px double #13303A}
+.cert h2{font-size:clamp(24px,4vw,36px)}
+.cert .who{font:800 clamp(26px,5vw,42px) var(--display);color:#0E7C6B;margin:8px 0}
+.cert input{font:700 18px var(--body);padding:8px 12px;border-radius:8px;border:2px solid #08161B;max-width:100%}
+
+#fx{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--mint);color:#06201D;font-weight:800;padding:12px 18px;border-radius:999px;z-index:60;max-width:calc(100% - 32px);text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.4)}
+@media (max-width:900px){.forge,.sym-grid,.around,.hero{grid-template-columns:1fr}.boxes{grid-template-columns:repeat(2,minmax(0,1fr))}.mem{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:520px){.qopts{grid-template-columns:1fr}.spot{grid-template-columns:repeat(2,minmax(0,1fr))}.ctrl .num{font-size:28px}.tile{width:120px;height:150px}.tile .sym{font-size:50px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<canvas id="fx"></canvas>
+<div class="wrap">
+<header>
+  <div class="brand"><div class="mini"><small>3</small><b>Lò</b></div><div><h1>Lò Nguyên Tố</h1><p>KHTN 7 · BÀI 3 · NGUYÊN TỐ HOÁ HỌC · HỌC LIỆU TƯƠNG TÁC VÀ MÔ PHỎNG</p></div></div>
+  <div class="score">Huy hiệu <b id="badgeN">0</b>/13</div>
+</header>
+<nav class="rooms" id="nav"></nav>
+
+<!-- HUB -->
+<section class="view" id="v-hub">
+  <div class="hero">
+    <div><span class="chip">Phòng chờ</span><h2 style="margin-top:10px">118 nguyên tố tạo nên mọi thứ quanh em. Điều gì làm chúng khác nhau?</h2>
+      <div class="quote">Gợi ý: hãy đếm số hạt màu đỏ trong hạt nhân.</div>
+      <p>Vào lò để tự tạo nguyên tử, xếp thẻ, viết kí hiệu, sưu tầm 20 nguyên tố đầu tiên và tìm nguyên tố trong cơ thể em. Hoàn thành nhiệm vụ để nhận huy hiệu và giấy chứng nhận Nhà hoá học nhí.</p></div>
+    <div class="panel" style="text-align:center"><svg id="heroAtom" viewBox="0 0 500 500" aria-label="Mô hình nguyên tử thay đổi theo số proton"></svg><div id="heroName" style="font:800 20px var(--display)"></div></div>
+  </div>
+  <div class="hub" id="hubRooms"></div>
+</section>
+
+<!-- R1 FORGE -->
+<section class="view" id="v-r1" hidden>
+  <div class="forge">
+    <div class="panel" style="padding:10px"><div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center"><span class="chip">Phòng 01 · Lò tạo nguyên tử</span><span class="dim" style="font-size:13px">Mô hình đơn giản hoá, không theo tỉ lệ thật</span></div>
+      <svg id="atom" viewBox="0 0 500 500" aria-label="Mô hình nguyên tử: hạt nhân gồm proton và neutron, electron chuyển động trên các lớp vỏ"></svg>
+      <div class="ctrls">
+        <div class="ctrl"><span class="lb"><i class="dot" style="background:var(--p)"></i>Proton (+)</span><span class="num" id="cp">0</span><span class="pm"><button data-k="p" data-d="-1" aria-label="Bớt proton">−</button><button data-k="p" data-d="1" aria-label="Thêm proton">+</button></span></div>
+        <div class="ctrl"><span class="lb"><i class="dot" style="background:var(--n)"></i>Neutron (0)</span><span class="num" id="cn">0</span><span class="pm"><button data-k="n" data-d="-1" aria-label="Bớt neutron">−</button><button data-k="n" data-d="1" aria-label="Thêm neutron">+</button></span></div>
+        <div class="ctrl"><span class="lb"><i class="dot" style="background:var(--e)"></i>Electron (−)</span><span class="num" id="ce">0</span><span class="pm"><button data-k="e" data-d="-1" aria-label="Bớt electron">−</button><button data-k="e" data-d="1" aria-label="Thêm electron">+</button></span></div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="panel idrow"><div class="tile" id="idTile"></div><div class="idinfo" id="idInfo"></div></div>
+      <div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><b>Nhiệm vụ của lò</b><span class="dim mono" id="msCount"></span></div><div class="missions" id="missions"></div><div class="fb" id="msFb" style="margin-top:8px"></div></div>
+      <label class="panel" style="display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer"><input type="checkbox" id="extE"> <span><b>Chế độ mở rộng</b> (dành cho học sinh khá, giỏi): cho phép thay đổi riêng số electron. Mặc định, số electron luôn bằng số proton (nguyên tử trung hoà về điện).</span></label>
+      <div class="panel" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="dim" style="font-size:14px">Tạo nhanh:</span><button class="btn" data-q="1">H</button><button class="btn" data-q="6">C</button><button class="btn" data-q="8">O</button><button class="btn" data-q="11">Na</button><button class="btn" data-q="20">Ca</button><button class="btn" data-q="0">Xoá hết</button></div>
+    </div>
+  </div>
+  <details class="tnote"><summary>Gợi ý cho giáo viên</summary>Dùng ở phần I. Nguyên tố hoá học. Yêu cầu học sinh dự đoán trước khi bấm: “Thêm 1 neutron vào nguyên tử carbon thì nó có còn là carbon?”, “Thêm 1 proton thì sao?”. Kết luận: số proton quyết định nguyên tố; nguyên tử cùng nguyên tố có thể khác số neutron (ví dụ oxygen có 8, 9 hoặc 10 neutron). Mặc định số electron tự bằng số proton (nguyên tử trung hoà) để đúng phạm vi lớp 7; chỉ bật “Chế độ mở rộng” khi muốn học sinh khá, giỏi thấy rằng thay đổi electron không làm đổi nguyên tố.</details>
+</section>
+
+<!-- R2 SORT -->
+<section class="view" id="v-r2" hidden>
+  <div class="panel">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><div><span class="chip">Phòng 02 · Xếp thẻ nguyên tử</span><h3 style="font-size:24px;margin-top:6px">12 tấm thẻ (p, n) – mỗi ô vuông là một nguyên tố</h3></div><span class="dim">Chọn một thẻ, rồi chọn ô vuông để đặt vào. Bấm lại thẻ trong ô để lấy ra.</span></div>
+    <div class="cards" id="cards" style="margin-top:12px"></div>
+    <div class="boxes" id="boxes"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px"><button class="btn pri" id="sortCheck">Kiểm tra</button><button class="btn" id="sortReset">Làm lại</button><span class="fb" id="sortFb"></span></div>
+    <div id="sortQ" class="dim" style="margin-top:10px;font-size:15px"></div>
+  </div>
+  <details class="tnote"><summary>Gợi ý cho giáo viên</summary>Đây là hoạt động “Nhận biết nguyên tố hoá học dựa vào số proton” trong SGK, chuyển thành mô phỏng. Chia nhóm thảo luận trước, rồi mời đại diện lên xếp. Câu hỏi: Em xếp được bao nhiêu ô vuông? Các nguyên tử nào thuộc cùng một nguyên tố? Đáp án: 6 ô (H, C, N, O, K, Ca).</details>
+</section>
+
+<!-- R3 SYMBOL -->
+<section class="view" id="v-r3" hidden>
+  <div class="sym-grid">
+    <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <span class="chip">Phòng 03 · Xưởng kí hiệu</span>
+      <div class="rule"><b>Quy tắc:</b> kí hiệu hoá học gồm 1 hoặc 2 chữ cái trong tên nguyên tố; chữ cái đầu viết <b>in hoa</b>, chữ cái sau viết <b>thường</b>. Một số kí hiệu lấy từ tên Latin: sodium (natrium) → <b>Na</b>, potassium (kalium) → <b>K</b>.</div>
+      <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="font-size:22px" id="symAsk"></h3><span class="dim mono" id="symCount"></span></div>
+      <div class="slot" id="slot" aria-live="polite"></div>
+      <div class="letters" id="letters"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="btn" id="symBack">Xoá chữ</button><button class="btn pri" id="symCheck">Kiểm tra</button></div>
+      <div class="fb" id="symFb" style="text-align:center"></div>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <h3 style="font-size:22px">Soát lỗi kí hiệu</h3><p class="dim" style="margin:0">Mỗi thẻ viết đúng hay sai quy tắc?</p>
+      <div class="spot" id="spot"></div><div class="fb" id="spotFb"></div>
+    </div>
+  </div>
+  <details class="tnote"><summary>Gợi ý cho giáo viên</summary>Dùng ở phần II.2 Kí hiệu của nguyên tố hoá học. Nhấn mạnh lỗi thường gặp: viết hoa cả hai chữ (CA), viết thường chữ đầu (mg); “CO” không phải kí hiệu của cobalt mà là hai nguyên tố C và O. Thảo luận vì sao kí hiệu của sodium là Na.</details>
+</section>
+
+<!-- R4 COLLECTION -->
+<section class="view" id="v-r4" hidden>
+  <div class="panel">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><div><span class="chip">Phòng 04 · Bộ sưu tập 20 nguyên tố</span><h3 style="font-size:24px;margin-top:6px">Lật thẻ: ghép tên với kí hiệu</h3></div><div class="mono dim">Lượt lật: <b id="memMoves" style="color:var(--amber)">0</b> · Cặp: <b id="memPairs" style="color:var(--amber)">0</b>/8 <button class="btn" id="memNew" style="margin-left:8px">Ván mới</button></div></div>
+    <div class="mem" id="mem" style="margin-top:12px"></div>
+    <div class="fb" id="memFb" style="margin-top:8px"></div>
+  </div>
+  <div class="panel" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><h3 style="font-size:22px">Luyện đọc tên: nghe và chọn kí hiệu</h3><span class="dim mono" id="lsCount"></span></div>
+    <p class="dim" style="margin:0">Bấm “Nghe tên” để nghe tên nguyên tố, chọn kí hiệu đúng, rồi đọc to theo. Có thể nghe lại nhiều lần.</p>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><button class="btn pri" id="lsPlay">Nghe tên</button><span id="lsName" style="font:800 22px var(--display);color:var(--amber)"></span></div>
+    <div id="lsOpts" style="display:flex;gap:10px;flex-wrap:wrap"></div><div class="fb" id="lsFb"></div>
+  </div>
+  <div class="panel" style="margin-top:14px"><h3 style="font-size:20px;margin-bottom:10px">Bảng 20 nguyên tố đầu tiên (theo Bảng 3.1 SGK)</h3><div class="tablewrap"><div class="ptable" id="ptable"></div></div><div class="dim" style="font-size:13px;margin-top:6px">Số trên: số hiệu nguyên tử Z · Số dưới: khối lượng nguyên tử (amu)</div></div>
+  <details class="tnote"><summary>Gợi ý cho giáo viên</summary>Dùng để ghi nhớ tên, kí hiệu và luyện đọc tên 20 nguyên tố đầu tiên (yêu cầu cần đạt “đọc được tên”). Bấm loa ở bảng, ở ô nguyên tố hoặc lật thẻ tên để nghe đọc tên theo IUPAC bằng giọng tiếng Anh có sẵn của trình duyệt (nên dùng Chrome, Edge); giáo viên đọc mẫu và cho học sinh đọc theo. Lật thẻ: đội nào hoàn thành với ít lượt lật nhất thắng.</details>
+</section>
+
+<!-- R5 AROUND -->
+<section class="view" id="v-r5" hidden>
+  <div class="around">
+    <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+      <span class="chip">Phòng 05 · Nguyên tố trong cơ thể em</span>
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap"><svg id="body" viewBox="0 0 160 300" style="width:130px" aria-label="Hình người tô màu theo tỉ lệ nguyên tố"></svg><div style="flex:1;min-width:200px"><div class="waffle" id="waffle" aria-label="Mỗi ô là 0,5% khối lượng cơ thể"></div><div class="dim" style="font-size:13px;margin-top:6px">Mỗi ô vuông = 0,5% khối lượng cơ thể (số liệu theo biểu đồ SGK)</div></div></div>
+      <label for="kg" style="font-weight:700">Cân nặng của em: <span class="mono" id="kgV" style="color:var(--amber)"></span></label><input type="range" id="kg" min="25" max="70" value="40">
+      <div class="legend" id="legend"></div>
+      <div class="fb ok" id="bodyFb"></div>
+    </div>
+    <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+      <h3 style="font-size:22px">Nguyên tố quanh em</h3><p class="dim" style="margin:0">Bấm vào từng đồ vật để tìm nguyên tố có trong đó.</p>
+      <svg id="things" viewBox="0 0 520 300" aria-label="Các đồ vật quen thuộc"></svg>
+      <div id="thingInfo" class="panel" style="min-height:96px;background:rgba(0,0,0,.2)"><span class="dim">Chưa chọn đồ vật.</span></div>
+      <div class="dim mono" style="font-size:13px">Đã khám phá: <b id="thingN" style="color:var(--amber)">0</b>/8</div>
+    </div>
+  </div>
+  <details class="tnote"><summary>Gợi ý cho giáo viên</summary>Dùng ở phần mở đầu (biểu đồ nguyên tố tạo nên cơ thể người) và hoạt động “Nhận biết nguyên tố hoá học có mặt xung quanh ta”. Học sinh kéo thanh cân nặng để tính khối lượng mỗi nguyên tố trong cơ thể mình (vận dụng tỉ lệ phần trăm). Đồng (Cu) và sắt (Fe) không thuộc 20 nguyên tố đầu nhưng SGK có nhắc đến tên gọi.</details>
+</section>
+
+<!-- INFO -->
+<section class="view" id="v-info" hidden>
+  <div class="panel" style="max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+    <span class="chip">Thông tin học liệu (theo Công văn 5158/SGDĐT-GDTrH)</span>
+    <h2 style="font-size:28px">Lò Nguyên Tố – Học liệu tương tác và mô phỏng</h2>
+    <div class="tablewrap"><table style="width:100%;border-collapse:collapse;font-size:15px" id="infoT"></table></div>
+  </div>
+</section>
+
+<!-- R6 QUIZ -->
+<section class="view" id="v-r6" hidden>
+  <div class="quiz" id="quiz"></div>
+  <details class="tnote" style="max-width:820px;margin:14px auto 0"><summary>Gợi ý cho giáo viên</summary>Dùng ở phần Luyện tập hoặc củng cố cuối tiết, mỗi câu 30 giây. Đạt từ 6/8 câu nhận giấy chứng nhận Nhà hoá học nhí.</details>
+</section>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const EL=[['H','hydrogen',1],['He','helium',4],['Li','lithium',7],['Be','beryllium',9],['B','boron',11],['C','carbon',12],['N','nitrogen',14],['O','oxygen',16],['F','fluorine',19],['Ne','neon',20],['Na','sodium (natri)',23],['Mg','magnesium',24],['Al','aluminium (nhôm)',27],['Si','silicon',28],['P','phosphorus',31],['S','sulfur (lưu huỳnh)',32],['Cl','chlorine',35.5],['Ar','argon',40],['K','potassium (kali)',39],['Ca','calcium',40]];
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const fmt=n=>String(n).replace('.',',');
+
+/* speech */
+let voice=null;function pickV(){try{const vs=speechSynthesis.getVoices();voice=vs.find(v=>/en-GB/i.test(v.lang))||vs.find(v=>/en-US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}catch(e){}}
+try{pickV();speechSynthesis.onvoiceschanged=pickV}catch(e){}
+const nameOnly=s=>s.replace(/\s*\(.*\)/,'');
+function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=voice?voice.lang:'en-GB';if(voice)u.voice=voice;u.rate=.8;speechSynthesis.speak(u)}catch(e){toast('Thiết bị chưa có giọng đọc tiếng Anh – giáo viên đọc mẫu nhé.')}}
+const SPK='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.8 6a8.5 8.5 0 0 1 0 12"/></svg>';
+
+/* sound + fx */
+let AC=null;const ac=()=>{if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC};
+function tone(f,d,t='sine',v=.13,w=0){const a=ac();if(!a)return;const s=a.currentTime+w,o=a.createOscillator(),g=a.createGain();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,s);g.gain.exponentialRampToValueAtTime(.001,s+d);o.connect(g).connect(a.destination);o.start(s);o.stop(s+d)}
+const ding=()=>{tone(880,.15,'triangle');tone(1320,.25,'triangle',.11,.08)},oops=()=>tone(170,.2,'square',.05),fan=()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,.3,'triangle',.12,i*.09));
+const fx=$('#fx'),fc=fx.getContext('2d');let P=[],run=false;const rs=()=>{fx.width=innerWidth;fx.height=innerHeight};addEventListener('resize',rs);rs();
+function burst(){const c=['#FF5D5D','#A9B4B8','#4FD1FF','#5EEAD4','#FFC857','#B69CFF'];for(let i=0;i<130;i++){const a=Math.random()*Math.PI*2,s=3+Math.random()*9;P.push({x:innerWidth/2,y:innerHeight*.35,vx:Math.cos(a)*s,vy:Math.sin(a)*s-3,r:3+Math.random()*4,c:c[i%6],l:110})}if(!run){run=true;requestAnimationFrame(step)}}
+function step(){fc.clearRect(0,0,fx.width,fx.height);P.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.22;p.vx*=.985;p.l--;fc.globalAlpha=Math.max(0,p.l/110);fc.fillStyle=p.c;fc.beginPath();fc.arc(p.x,p.y,p.r,0,7);fc.fill()});fc.globalAlpha=1;P=P.filter(p=>p.l>0);if(P.length)requestAnimationFrame(step);else{run=false;fc.clearRect(0,0,fx.width,fx.height)}}
+function toast(t){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2600)}
+let badges={};try{badges=JSON.parse(localStorage.getItem('lnt-badges')||'{}')}catch(e){}
+function badge(id,msg){if(badges[id])return;badges[id]=1;try{localStorage.setItem('lnt-badges',JSON.stringify(badges))}catch(e){}$('#badgeN').textContent=Object.keys(badges).length;fan();burst();toast(msg);renderHub()}
+$('#badgeN').textContent=Object.keys(badges).length;
+document.getElementById('extE').addEventListener('change',()=>{if(!$('#extE').checked)A.e=A.p;renderForge()});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-say]');if(b){e.stopPropagation();say(b.dataset.say)}},true);
+
+/* ---------- atom drawing ---------- */
+const CAP=[2,8,8,2],R=[78,122,166,206];
+function shells(e){const out=[];let left=e;for(let i=0;i<4&&left>0;i++){const k=Math.min(CAP[i],left);out.push(k);left-=k}return out}
+function atomSVG(p,n,e,spin=true,X='a'){let s=`<defs><radialGradient id="${X}gp" cx="35%" cy="35%"><stop offset="0" stop-color="#FFB3B3"/><stop offset="1" stop-color="#E63B3B"/></radialGradient><radialGradient id="${X}gn" cx="35%" cy="35%"><stop offset="0" stop-color="#E9EEF0"/><stop offset="1" stop-color="#8A969B"/></radialGradient><radialGradient id="${X}ge" cx="35%" cy="35%"><stop offset="0" stop-color="#C9F3FF"/><stop offset="1" stop-color="#1EA7E0"/></radialGradient><radialGradient id="${X}glow"><stop offset="0" stop-color="rgba(255,93,93,.35)"/><stop offset="1" stop-color="rgba(255,93,93,0)"/></radialGradient></defs>`;
+ const sh=shells(e);const nShell=Math.max(sh.length,p?1:0);
+ for(let i=0;i<Math.max(nShell,1);i++)s+=`<circle cx="250" cy="250" r="${R[i]}" fill="none" stroke="rgba(79,209,255,${i<sh.length?.35:.12})" stroke-width="1.5" stroke-dasharray="${i<sh.length?'':'4 6'}"/>`;
+ sh.forEach((k,i)=>{s+=`<g class="orbit" style="${spin?`animation:spin ${10+i*6}s linear infinite${i%2?' reverse':''}`:''}">`;for(let j=0;j<k;j++){const a=j/k*Math.PI*2-Math.PI/2;s+=`<circle cx="${250+R[i]*Math.cos(a)}" cy="${250+R[i]*Math.sin(a)}" r="9" fill="url(#${X}ge)"/>`}s+='</g>'});
+ const tot=p+n;if(tot){s+=`<circle cx="250" cy="250" r="${26+Math.sqrt(tot)*7}" fill="url(#${X}glow)"/>`;const order=[];// interleave p and n
+  let pi=0,ni=0;for(let i=0;i<tot;i++){if((pi/(p||1))<=(ni/(n||1))&&pi<p){order.push('p');pi++}else if(ni<n){order.push('n');ni++}else{order.push('p');pi++}}
+  const rr=tot>30?9:11;order.forEach((t,i)=>{const r=rr*1.15*Math.sqrt(i),a=i*2.39996;s+=`<circle cx="${250+r*Math.cos(a)}" cy="${250+r*Math.sin(a)}" r="${rr}" fill="url(#${X}g${t})" stroke="rgba(0,0,0,.35)" stroke-width=".8"/>`})}
+ else s+=`<text x="250" y="256" text-anchor="middle" fill="#6E918C" font-family="Be Vietnam Pro" font-size="16" font-weight="700">Hạt nhân trống – hãy thêm proton</text>`;
+ return s}
+function tileHTML(p){if(!p||p>20)return `<span class="z">${p>20?p:'?'}</span><span class="sym">${p>20?'…':'?'}</span><span class="nm">${p>20?'Ngoài 20 nguyên tố đầu':'Chưa có proton'}</span><span class="ms"></span>`;const E=EL[p-1];return `<span class="z">${p}</span><span class="sym">${E[0]}</span><span class="nm">${cap(E[1])}</span><span class="ms">${fmt(E[2])} amu</span><button class="say" data-say="${nameOnly(E[1])}" aria-label="Nghe đọc tên ${E[1]}">${SPK}</button>`}
+
+/* ---------- R1 forge ---------- */
+let A={p:1,n:0,e:1};
+const MS=[
+ {t:'Tạo nguyên tử carbon (C) trung hoà về điện, có 6 neutron.',ok:a=>a.p===6&&a.n===6&&a.e===6,m:'Carbon có 6 proton. Số electron bằng số proton nên nguyên tử trung hoà.'},
+ {t:'Tạo nguyên tử oxygen có 8 neutron.',ok:a=>a.p===8&&a.n===8&&a.e===8,m:'Oxygen có 8 proton, số hiệu nguyên tử Z = 8.'},
+ {t:'Thí nghiệm: giữ 8 proton, đổi số neutron thành 10. Nguyên tử vẫn là oxygen chứ?',ok:a=>a.p===8&&a.n===10,m:'Vẫn là oxygen! Số proton không đổi nên nguyên tố không đổi. Oxygen trong tự nhiên có 8, 9 hoặc 10 neutron.'},
+ {t:'Một nguyên tử có 11 proton, 12 neutron. Tạo nó (trung hoà) và đọc tên.',ok:a=>a.p===11&&a.n===12&&a.e===11,m:'Đó là sodium (natri), kí hiệu Na, lấy từ tên Latin natrium.'},
+ {t:'Tạo nguyên tử có 3 lớp electron, lớp ngoài cùng có đủ 8 electron.',ok:a=>a.p===18&&a.e===18,m:'Đó là argon (Ar), Z = 18: 2 + 8 + 8 electron.'},
+ {t:'Tạo nguyên tử của nguyên tố có số hiệu nguyên tử lớn nhất trong 20 nguyên tố đầu tiên (trung hoà).',ok:a=>a.p===20&&a.e===20,m:'Calcium (Ca), Z = 20.'}];
+let mi=0;
+function renderMissions(){$('#missions').innerHTML=MS.map((m,i)=>`<button class="${i===mi?'cur':''} ${badges['m'+i]?'done':''}" data-i="${i}"><span class="s">${badges['m'+i]?'★':i+1}</span>${m.t}</button>`).join('');$$('#missions button').forEach(b=>b.onclick=()=>{mi=+b.dataset.i;renderMissions();$('#msFb').textContent=''});$('#msCount').textContent=MS.filter((m,i)=>badges['m'+i]).length+'/'+MS.length}
+let lastP=-1,quick=false;
+function renderForge(){const ext=$('#extE').checked;$$('.ctrl .pm button[data-k="e"]').forEach(b=>{b.disabled=!ext;b.style.opacity=ext?1:.35});$('#atom').innerHTML=atomSVG(A.p,A.n,A.e);$('#cp').textContent=A.p;$('#cn').textContent=A.n;$('#ce').textContent=A.e;$('#idTile').innerHTML=tileHTML(A.p);$('#idTile').className='tile'+(A.p&&A.p<=20?'':' empty');
+ const E=A.p&&A.p<=20?EL[A.p-1]:null;const ch=A.p-A.e;
+ $('#idInfo').innerHTML=!A.p?'<span class="dim">Nguyên tố được xác định bởi <b>số proton</b>. Hãy thêm proton vào hạt nhân.</span>':
+  `<span>Số proton = số hiệu nguyên tử <b>Z = ${A.p}</b></span><span>Nguyên tố: <b>${E?cap(E[1]):'chưa có trong bảng 20 nguyên tố'}</b></span><span>Khối lượng ≈ p + n = <b>${A.p+A.n} amu</b></span><span>${ch===0?'Số electron = số proton: nguyên tử trung hoà về điện':`Số electron khác số proton (mở rộng) – <b>vẫn là ${E?E[0]:'nguyên tố này'}</b> vì số proton không đổi`}</span>`;
+ if(A.p!==lastP&&lastP>=0&&A.p)tone(300+A.p*30,.14,'triangle');lastP=A.p;
+ const m=MS[mi];if(m&&!quick&&m.ok(A)&&!badges['m'+mi]){$('#msFb').className='fb ok';$('#msFb').textContent=m.m;badge('m'+mi,'Hoàn thành nhiệm vụ '+(mi+1)+'!');const nx=MS.findIndex((x,i)=>!badges['m'+i]);if(nx>=0)mi=nx;renderMissions()}}
+$$('.ctrl .pm button').forEach(b=>b.onclick=()=>{ac();const k=b.dataset.k,d=+b.dataset.d,max={p:20,n:24,e:20}[k];quick=false;A[k]=Math.max(0,Math.min(max,A[k]+d));if(k==='p'&&!$('#extE').checked)A.e=A.p;tone(k==='p'?520:k==='n'?330:700,.06);renderForge()});
+$$('[data-q]').forEach(b=>b.onclick=()=>{ac();const z=+b.dataset.q;const nn={0:0,1:0,6:6,8:8,11:12,20:20}[z];A={p:z,n:nn,e:z};quick=true;renderForge()});
+renderMissions();
+
+/* ---------- R2 sort ---------- */
+const PC=[['A',1,0],['D',1,1],['E',1,2],['G',6,6],['L',6,8],['M',7,7],['Q',8,8],['R',8,9],['T',8,10],['X',20,20],['Y',19,20],['Z',19,21]];
+let place={},csel=null;
+function renderSort(mark){const free=PC.filter(c=>place[c[0]]===undefined);
+ $('#cards').innerHTML=free.map(c=>`<button class="pcard ${csel===c[0]?'sel':''}" data-c="${c[0]}"><span class="l">${c[0]}</span><div class="v">(<span class="pp">${c[1]}</span>, <span class="nn">${c[2]}</span>)</div></button>`).join('')||'<span class="dim">Đã đặt hết thẻ. Bấm Kiểm tra.</span>';
+ $('#boxes').innerHTML=Array.from({length:8},(_,i)=>{const inb=PC.filter(c=>place[c[0]]===i);const ps=[...new Set(inb.map(c=>c[1]))];let cls='',rev='';
+  if(mark&&inb.length){const good=ps.length===1&&PC.filter(c=>c[1]===ps[0]).every(c=>place[c[0]]===i);cls=good?'good':'badb';if(good){const E=EL[ps[0]-1];rev=`<span class="reveal">${E[0]} · ${cap(E[1])}</span>`}}
+  return `<button class="box ${cls}" data-b="${i}"><span class="hd">Ô ${i+1}</span>${rev}<span class="in">${inb.map(c=>`<span data-out="${c[0]}">${c[0]} (${c[1]},${c[2]})</span>`).join('')}</span></button>`}).join('');
+ $$('#cards .pcard').forEach(b=>b.onclick=()=>{csel=b.dataset.c;tone(600,.05);renderSort()});
+ $$('#boxes .box').forEach(b=>b.onclick=e=>{const o=e.target.closest('[data-out]');if(o){delete place[o.dataset.out];tone(400,.05);$('#sortFb').textContent='';renderSort();return}if(!csel){$('#sortFb').className='fb no';$('#sortFb').textContent='Chọn một thẻ trước.';return}place[csel]=+b.dataset.b;csel=null;tone(700,.05);$('#sortFb').textContent='';renderSort()})}
+$('#sortCheck').onclick=()=>{if(Object.keys(place).length<PC.length){$('#sortFb').className='fb no';$('#sortFb').textContent='Hãy đặt hết 12 thẻ vào các ô.';return}
+ const groups={};PC.forEach(c=>{(groups[place[c[0]]]=groups[place[c[0]]]||[]).push(c[1])});const ok=Object.values(groups).every(g=>new Set(g).size===1)&&new Set(Object.values(groups).map(g=>g[0])).size===Object.keys(groups).length;
+ renderSort(true);if(ok){ding();$('#sortFb').className='fb ok';$('#sortFb').textContent=`Chính xác! Em xếp được ${Object.keys(groups).length} ô vuông = 6 nguyên tố.`;$('#sortQ').innerHTML='<b style="color:var(--ink)">Kết luận:</b> các nguyên tử có cùng số proton thuộc cùng một nguyên tố hoá học, dù số neutron khác nhau (A, D, E đều là hydrogen; Q, R, T đều là oxygen).';badge('sort','Xếp thẻ chính xác: 6 nguyên tố!')}
+ else{oops();$('#sortFb').className='fb no';$('#sortFb').textContent='Có ô chứa nguyên tử khác loại, hoặc cùng loại bị tách ra nhiều ô. Chỉ nhìn vào số p!'}};
+$('#sortReset').onclick=()=>{place={};csel=null;$('#sortFb').textContent='';$('#sortQ').textContent='';renderSort()};
+renderSort();
+
+/* ---------- R3 symbols ---------- */
+const ST=[['calcium','Ca','Ca'],['magnesium','Mg','Mg'],['chlorine','Cl','Cl'],['sodium (natri)','Na','Na'],['potassium (kali)','K','K'],['neon','Ne','Ne']];
+const DIST={Ca:'CcAaLl',Mg:'MmGgAa',Cl:'CcLlHh',Na:'NnAaSo',K:'KkPpOo',Ne:'NnEeOo'};
+let si=0,built='';
+function renderSym(){if(si>=ST.length){$('#symAsk').textContent='Hoàn thành xưởng kí hiệu!';$('#slot').innerHTML='<span>✓</span>';$('#letters').innerHTML='';$('#symCount').textContent=`${ST.length}/${ST.length}`;badge('sym','Bậc thầy kí hiệu hoá học!');return}
+ const t=ST[si];$('#symAsk').textContent='Viết kí hiệu của '+t[0];$('#symCount').textContent=`${si+1}/${ST.length}`;$('#slot').innerHTML=built?[...built].map(c=>`<span>${c}</span>`).join(''):'<span class="dim" style="font-size:18px;font-family:var(--body)">Chọn chữ cái bên dưới</span>';
+ const L=[...DIST[t[1]]].sort((a,b)=>(a.toLowerCase()+a).localeCompare(b.toLowerCase()+b));$('#letters').innerHTML=L.map(c=>`<button data-c="${c}" aria-label="chữ ${c}">${c}</button>`).join('');$$('#letters button').forEach(b=>b.onclick=()=>{if(built.length<2){built+=b.dataset.c;tone(600,.05);renderSym()}})}
+$('#symBack').onclick=()=>{built=built.slice(0,-1);renderSym()};
+$('#symCheck').onclick=()=>{const t=ST[si];if(!t)return;if(built===t[1]){ding();$('#symFb').className='fb ok';$('#symFb').textContent=`Đúng: ${t[0]} → ${t[1]}.`;si++;built='';setTimeout(renderSym,700)}else{oops();$('#symFb').className='fb no';const why=built.toUpperCase()===t[1].toUpperCase()?'Chú ý chữ in hoa, chữ thường!':(t[1]==='Na'||t[1]==='K')?'Gợi ý: kí hiệu này lấy từ tên Latin.':'Chưa đúng, thử lại nhé.';$('#symFb').textContent=why}};
+renderSym();
+const SP=[['Na','sodium',1,''],['NA','sodium',0,'Chữ sau phải viết thường: Na'],['mg','magnesium',0,'Chữ đầu phải in hoa: Mg'],['Cl','chlorine',1,''],['CA','calcium',0,'Đúng phải là Ca'],['K','potassium',1,''],['HE','helium',0,'Đúng phải là He'],['Ar','argon',1,''],['o','oxygen',0,'Chữ đầu phải in hoa: O']];
+let spOk={};
+$('#spot').innerHTML=SP.map((s,i)=>`<div class="c" id="sp${i}"><span class="w">${s[0]}</span><span class="nm">${s[1]}</span><span class="bt"><button data-i="${i}" data-v="1">Đúng</button><button data-i="${i}" data-v="0">Sai</button></span><span class="why" id="spw${i}"></span></div>`).join('');
+$$('#spot .bt button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i,s=SP[i],ok=+b.dataset.v===s[2];$('#sp'+i).className='c '+(ok?'ok':'no');$('#spw'+i).textContent=ok?(s[2]?'Viết đúng quy tắc':s[3]):'Nhìn lại: chữ đầu in hoa, chữ sau viết thường.';if(ok){ding();spOk[i]=1}else{oops();delete spOk[i]}
+ if(Object.keys(spOk).length===SP.length){$('#spotFb').className='fb ok';$('#spotFb').textContent='Em đã soát đúng cả 9 thẻ!';badge('spot','Thanh tra kí hiệu xuất sắc!')}});
+
+/* ---------- R4 memory ---------- */
+let mem=[],open=[],moves=0,pairs=0,lock=false;
+function newMem(){const pick=[...EL.keys()].sort(()=>Math.random()-.5).slice(0,8);mem=[];pick.forEach(i=>{mem.push({k:i,t:'s'});mem.push({k:i,t:'n'})});mem.sort(()=>Math.random()-.5);open=[];moves=0;pairs=0;lock=false;$('#memMoves').textContent=0;$('#memPairs').textContent=0;$('#memFb').textContent='';
+ $('#mem').innerHTML=mem.map((c,i)=>{const E=EL[c.k];return `<button class="mc" data-i="${i}" aria-label="Thẻ ${i+1}"><span class="in"><span class="f">?</span><span class="b">${c.t==='s'?`<span><span class="big">${E[0]}</span></span>`:`<span class="sm">${cap(E[1])}</span>`}</span></span></button>`}).join('');
+ $$('#mem .mc').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(lock||b.classList.contains('open')||b.classList.contains('got'))return;b.classList.add('open');open.push(i);tone(500,.05);if(mem[i].t==='n')say(nameOnly(EL[mem[i].k][1]));
+  if(open.length===2){moves++;$('#memMoves').textContent=moves;const [a,c]=open.map(j=>mem[j]);if(a.k===c.k&&a.t!==c.t){open.forEach(j=>{$$('#mem .mc')[j].classList.remove('open');$$('#mem .mc')[j].classList.add('got')});open=[];pairs++;$('#memPairs').textContent=pairs;ding();
+    if(pairs===8){$('#memFb').className='fb ok';$('#memFb').textContent=`Hoàn thành với ${moves} lượt lật!`;badge('mem','Nhà sưu tầm nguyên tố!')}}
+   else{lock=true;setTimeout(()=>{open.forEach(j=>$$('#mem .mc')[j].classList.remove('open'));open=[];lock=false},850)}}})}
+$('#memNew').onclick=newMem;newMem();
+const LS=[...EL.keys()].sort(()=>Math.random()-.5).slice(0,8);let li=0;
+function renderLs(){$('#lsCount').textContent=`${Math.min(li+1,LS.length)}/${LS.length}`;if(li>=LS.length){$('#lsOpts').innerHTML='';$('#lsName').textContent='';$('#lsFb').className='fb ok';$('#lsFb').textContent='Em đã nghe và nhận ra 8 tên nguyên tố!';badge('listen','Đọc tên nguyên tố chuẩn!');return}
+ const k=LS[li];const opts=[k,...[...EL.keys()].filter(x=>x!==k).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);$('#lsName').textContent='';
+ $('#lsOpts').innerHTML=opts.map(o=>`<button class="btn" data-o="${o}" style="font:800 22px var(--display);min-width:70px">${EL[o][0]}</button>`).join('');
+ $$('#lsOpts button').forEach(b=>b.onclick=()=>{const o=+b.dataset.o;if(o===k){ding();$('#lsName').textContent=cap(EL[k][1]);$('#lsFb').className='fb ok';$('#lsFb').textContent=`Đúng: ${EL[k][0]} – ${EL[k][1]}. Đọc to theo nhé!`;say(nameOnly(EL[k][1]));li++;setTimeout(renderLs,1600)}else{oops();b.disabled=true;$('#lsFb').className='fb no';$('#lsFb').textContent='Chưa đúng, nghe lại nhé.'}})}
+$('#lsPlay').onclick=()=>{ac();if(li<LS.length)say(nameOnly(EL[LS[li]][1]))};renderLs();
+$('#ptable').innerHTML=EL.map((E,i)=>`<div class="pt"><small>${i+1}</small><button class="say" data-say="${nameOnly(E[1])}" aria-label="Nghe đọc tên ${E[1]}">${SPK}</button><b>${E[0]}</b><span>${E[1]}<br><span class="mono">${fmt(E[2])}</span></span></div>`).join('');
+
+/* ---------- R5 around ---------- */
+const BODY=[['Oxygen','O',65,'#4FD1FF'],['Carbon','C',18.5,'#A9B4B8'],['Hydrogen','H',9.5,'#FFC857'],['Nitrogen','N',3,'#B69CFF'],['Các nguyên tố khác','',4,'#FF5D5D']];
+function renderBody(){const kg=+$('#kg').value;$('#kgV').textContent=kg+' kg';
+ let cells=[];BODY.forEach(b=>{const n=Math.round(b[2]*2);for(let i=0;i<n;i++)cells.push(b[3])});$('#waffle').innerHTML=cells.map(c=>`<i style="background:${c}"></i>`).join('');
+ $('#legend').innerHTML=BODY.map(b=>`<div><span class="sw" style="background:${b[3]}"></span><span>${b[0]}${b[1]?` (${b[1]})`:''}</span><span class="pc">${fmt(b[2])}%</span><span class="kg">≈ ${fmt(Math.round(kg*b[2]/10)/10)} kg</span></div>`).join('');
+ // body silhouette filled bottom-up proportionally
+ let y=290,s=`<defs><clipPath id="hum"><circle cx="80" cy="34" r="24"/><rect x="50" y="62" width="60" height="110" rx="18"/><rect x="24" y="66" width="20" height="96" rx="10"/><rect x="116" y="66" width="20" height="96" rx="10"/><rect x="54" y="166" width="22" height="124" rx="10"/><rect x="84" y="166" width="22" height="124" rx="10"/></clipPath></defs><g clip-path="url(#hum)">`;
+ BODY.slice().reverse().forEach(b=>{const h=b[2]/100*280;y-=h;s+=`<rect x="0" y="${y}" width="160" height="${h+0.5}" fill="${b[3]}"/>`});s+='</g>';$('#body').innerHTML=s;
+ $('#bodyFb').textContent=`Cơ thể nặng ${kg} kg chứa khoảng ${fmt(Math.round(kg*0.65*10)/10)} kg oxygen!`}
+$('#kg').oninput=()=>{renderBody();tone(300+(+$('#kg').value)*6,.03)};renderBody();
+const TH=[
+ {id:'milk',n:'Hộp sữa',els:[['Ca','calcium','giúp xương, răng chắc khoẻ']],d:'<rect x="30" y="70" width="70" height="110" rx="6" fill="#F7FBFA" stroke="#5EEAD4" stroke-width="2"/><path d="M30 70 L50 40 H80 L100 70" fill="#DDEFEC" stroke="#5EEAD4" stroke-width="2"/><text x="65" y="135" text-anchor="middle" font-family="Lexend" font-size="20" font-weight="800" fill="#13303A">MILK</text>',b:[22,32,86,156]},
+ {id:'wire',n:'Dây điện',els:[['Cu','đồng (copper)','dẫn điện tốt (không thuộc 20 nguyên tố đầu)']],d:'<path d="M130 150 C160 90 200 200 240 120" fill="none" stroke="#C97B3C" stroke-width="10" stroke-linecap="round"/><path d="M130 150 C160 90 200 200 240 120" fill="none" stroke="#2B6CB0" stroke-width="16" stroke-linecap="round" opacity=".5"/>',b:[118,90,134,82]},
+ {id:'pot',n:'Nồi nhôm',els:[['Al','aluminium (nhôm)','nhẹ, dẫn nhiệt tốt']],d:'<rect x="280" y="100" width="100" height="60" rx="8" fill="#C9D3D6" stroke="#EAF6F4" stroke-width="2"/><rect x="270" y="92" width="120" height="12" rx="6" fill="#DDE5E7"/><rect x="250" y="110" width="30" height="8" rx="4" fill="#9AA5A8"/><rect x="380" y="110" width="30" height="8" rx="4" fill="#9AA5A8"/>',b:[244,84,172,84]},
+ {id:'balloon',n:'Bóng bay',els:[['He','helium','khí nhẹ, giúp bóng bay lên']],d:'<ellipse cx="460" cy="70" rx="32" ry="40" fill="#FF5D5D"/><path d="M460 110 Q450 140 466 170" fill="none" stroke="#EAF6F4" stroke-width="1.5"/>',b:[422,26,76,150]},
+ {id:'coal',n:'Than',els:[['C','carbon','làm nhiên liệu']],d:'<path d="M40 250 L60 222 L95 228 L110 255 L80 270 Z" fill="#2A2F33" stroke="#6E918C" stroke-width="2"/><path d="M95 262 L112 240 L138 248 L136 270 Z" fill="#1E2326" stroke="#6E918C" stroke-width="2"/>',b:[32,212,114,66]},
+ {id:'nail',n:'Đinh sắt',els:[['Fe','sắt (iron)','làm đinh, khung nhà (không thuộc 20 nguyên tố đầu)']],d:'<rect x="170" y="240" width="90" height="8" fill="#8C979B"/><rect x="164" y="232" width="8" height="24" rx="2" fill="#8C979B"/><path d="M260 240 L276 244 L260 248Z" fill="#8C979B"/>',b:[156,222,128,42]},
+ {id:'water',n:'Cốc nước',els:[['H','hydrogen',''],['O','oxygen','nước được tạo nên từ H và O']],d:'<path d="M310 200 L370 200 L362 285 L318 285 Z" fill="rgba(79,209,255,.35)" stroke="#4FD1FF" stroke-width="2"/>',b:[300,192,80,100]},
+ {id:'salt',n:'Muối ăn',els:[['Na','sodium (natri)',''],['Cl','chlorine','muối ăn được tạo nên từ Na và Cl']],d:'<rect x="410" y="210" width="60" height="75" rx="10" fill="#F7FBFA" stroke="#5EEAD4" stroke-width="2"/><rect x="418" y="200" width="44" height="14" rx="4" fill="#9AA5A8"/><text x="440" y="255" text-anchor="middle" font-family="Lexend" font-size="14" font-weight="800" fill="#13303A">MUỐI</text>',b:[400,192,82,100]}];
+let seen={},tsel=null;
+function renderThings(){$('#things').innerHTML=`<rect width="520" height="300" rx="12" fill="#0D2229"/><rect y="190" width="520" height="110" fill="#10272F"/>`+TH.map(t=>`<g class="thing ${tsel===t.id?'sel':''} ${seen[t.id]?'seen':''}" data-id="${t.id}" tabindex="0" role="button" aria-label="${t.n}">${t.d}<rect class="hl" x="${t.b[0]}" y="${t.b[1]}" width="${t.b[2]}" height="${t.b[3]}" rx="8"/><rect x="${t.b[0]}" y="${t.b[1]}" width="${t.b[2]}" height="${t.b[3]}" fill="transparent"/></g>`).join('');
+ $$('#things .thing').forEach(g=>{const f=()=>{const t=TH.find(x=>x.id===g.dataset.id);tsel=t.id;seen[t.id]=1;tone(640,.08);
+  $('#thingInfo').innerHTML=`<b style="font:800 18px var(--display)">${t.n}</b><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">${t.els.map(e=>`<div style="display:flex;gap:8px;align-items:center"><span style="display:grid;place-items:center;width:44px;height:44px;border-radius:8px;border:2px solid var(--mint);font:800 20px var(--display)">${e[0]}</span><span><b>${e[1]}</b>${e[2]?`<br><span class="dim" style="font-size:13px">${e[2]}</span>`:''}</span></div>`).join('')}</div>`;
+  $('#thingN').textContent=Object.keys(seen).length;renderThings();if(Object.keys(seen).length===TH.length)badge('around','Thám hiểm nguyên tố quanh em!')};g.onclick=f;g.onkeydown=e=>{if(e.key==='Enter')f()}})}
+renderThings();
+
+/* ---------- R6 quiz ---------- */
+const QZ=[
+ {q:'Nguyên tố hoá học là tập hợp những nguyên tử cùng loại, có cùng số … trong hạt nhân.',o:['neutron','proton','electron','proton và neutron'],a:1},
+ {q:'Kí hiệu hoá học nào được viết đúng?',o:['CA','ca','Ca','cA'],a:2},
+ {q:'Kí hiệu hoá học của nguyên tố sodium (natri) là:',o:['So','S','N','Na'],a:3},
+ {q:'Nguyên tử có 8 proton trong hạt nhân thuộc nguyên tố nào?',o:['Oxygen','Nitrogen','Carbon','Neon'],a:0},
+ {q:'Nguyên tử A có 6 proton, 6 neutron; nguyên tử B có 6 proton, 8 neutron. Phát biểu nào đúng?',o:['A và B thuộc hai nguyên tố khác nhau','A và B cùng thuộc nguyên tố carbon','B là nguyên tố oxygen','Không xác định được'],a:1},
+ {q:'Nguyên tố chiếm tỉ lệ khối lượng lớn nhất trong cơ thể người là:',o:['Carbon','Hydrogen','Oxygen','Nitrogen'],a:2},
+ {q:'Kí hiệu K là của nguyên tố nào?',o:['Krypton','Potassium (kali)','Calcium','Carbon'],a:1},
+ {q:'Số hiệu nguyên tử của oxygen là 8. Số proton trong hạt nhân nguyên tử oxygen là:',o:['16','4','8','10'],a:2}];
+let qi=0,qs=0,qt=null,tl=30,qName='';
+function qRender(){clearInterval(qt);const el=$('#quiz');
+ if(qi>=QZ.length){const pass=qs>=6;el.innerHTML=pass?`<div class="cert"><div style="font:700 13px var(--mono);letter-spacing:.2em">LÒ NGUYÊN TỐ · KHTN 7 · BÀI 3</div><h2 style="margin-top:10px">GIẤY CHỨNG NHẬN</h2><div style="font-weight:700">Nhà hoá học nhí</div><div class="who" id="certWho">${qName||'…'}</div><div style="font-weight:700">đã hoàn thành thử thách nguyên tố hoá học với <b>${qs}/${QZ.length}</b> câu đúng</div><div style="margin-top:14px"><label for="certIn" style="font-weight:700">Nhập tên em: </label><input id="certIn" maxlength="28" value="${qName}"></div><div style="margin-top:10px;font-size:14px">Chụp màn hình để lưu giấy chứng nhận.</div><button class="btn" style="margin-top:12px;color:#08161B;border-color:#08161B" id="qAgain">Làm lại</button></div>`
+  :`<div class="panel" style="text-align:center"><h2>${qs}/${QZ.length} câu đúng</h2><p class="dim">Cần ít nhất 6 câu đúng để nhận giấy chứng nhận. Ghé lại Lò tạo nguyên tử rồi thử lại nhé!</p><button class="btn pri" id="qAgain">Làm lại</button></div>`;
+  if(pass){badge('quiz','Nhận giấy chứng nhận Nhà hoá học nhí!');$('#certIn').oninput=e=>{qName=e.target.value.replace(/[<>&]/g,'');$('#certWho').textContent=qName||'…'}}
+  $('#qAgain').onclick=()=>{qi=0;qs=0;qRender()};return}
+ const q=QZ[qi];tl=30;el.innerHTML=`<div class="qhead"><span>CÂU ${qi+1}/${QZ.length}</span><span>ĐIỂM ${qs}</span><span id="qT">30s</span></div><div class="qbar"><i id="qB" style="width:100%"></i></div><div class="qtext">${q.q}</div><div class="qopts">${q.o.map((o,i)=>`<button data-i="${i}"><span class="k">${'ABCD'[i]}</span>${o}</button>`).join('')}</div><div class="fb" id="qFb"></div>`;
+ const bs=$$('#quiz .qopts button');const done=i=>{clearInterval(qt);bs.forEach(b=>b.disabled=true);bs[q.a].classList.add('right');if(i===q.a){qs++;ding();$('#qFb').className='fb ok';$('#qFb').textContent='Chính xác!'}else{if(i>=0)bs[i].classList.add('wrong');oops();$('#qFb').className='fb no';$('#qFb').textContent=i<0?'Hết giờ!':'Chưa đúng.'}setTimeout(()=>{qi++;qRender()},1500)};
+ bs.forEach(b=>b.onclick=()=>done(+b.dataset.i));qt=setInterval(()=>{tl--;$('#qT').textContent=tl+'s';$('#qB').style.width=(tl/30*100)+'%';if(tl<=0)done(-1)},1000)}
+
+/* ---------- info ---------- */
+const INFO=[['Tên học liệu','Lò Nguyên Tố'],['Loại học liệu','Học liệu tương tác và mô phỏng (mục II.2.3)'],['Môn học, lớp','Khoa học tự nhiên 7 – bộ sách Kết nối tri thức với cuộc sống'],['Bài học','Bài 3. Nguyên tố hoá học'],['Yêu cầu cần đạt','Phát biểu được khái niệm về nguyên tố hoá học và kí hiệu nguyên tố hoá học. Viết được kí hiệu hoá học và đọc được tên của 20 nguyên tố đầu tiên.'],['Mục đích, đối tượng','Giáo viên dùng trong hoạt động khám phá, luyện tập, vận dụng; học sinh lớp 7 tự học, tự kiểm tra. Dùng được trong dạy học trực tiếp, trực tuyến, kết hợp.'],['Hướng dẫn khai thác','Chọn phòng trên thanh điều hướng. Nút loa đọc tên nguyên tố bằng giọng tiếng Anh có sẵn của trình duyệt (nên dùng Chrome, Edge). Mỗi phòng có mục “Gợi ý cho giáo viên”. Chạy trên trình duyệt (máy tính, điện thoại, máy tính bảng), không cần cài đặt, không cần đăng nhập, mở được khi không có Internet.'],['Tác giả','Ngô Thị Phương – Tổ Khoa học tự nhiên, Trường THCS Võ Thị Sáu, phường An Biên, thành phố Hải Phòng'],['Nguồn tài liệu','SGK Khoa học tự nhiên 7 (Kết nối tri thức với cuộc sống), Bài 3: khái niệm, Bảng 3.1, biểu đồ nguyên tố trong cơ thể người, hoạt động xếp 12 tấm thẻ.'],['Bản quyền','Hình vẽ, mô phỏng, âm thanh do tác giả tạo bằng mã; không dùng tài nguyên của bên thứ ba. Phông chữ Lexend, Be Vietnam Pro, JetBrains Mono (giấy phép SIL OFL). Cho phép sử dụng, chỉnh sửa cho mục đích giáo dục, ghi rõ nguồn.'],['Sử dụng trí tuệ nhân tạo','Có dùng trợ lý AI Claude (Anthropic) hỗ trợ thiết kế, viết mã; tác giả đã kiểm tra, xác minh nội dung và chịu trách nhiệm về tính chính xác.'],['An toàn thông tin','Không thu thập, không gửi dữ liệu cá nhân; tên trên giấy chứng nhận và huy hiệu chỉ lưu trên thiết bị của người dùng.'],['Phiên bản','1.0 – tháng 10/2026']];
+$('#infoT').innerHTML=INFO.map(r=>`<tr><th style="text-align:left;vertical-align:top;padding:8px 12px 8px 0;border-bottom:1px solid var(--line);width:30%;color:var(--mint)">${r[0]}</th><td style="padding:8px 0;border-bottom:1px solid var(--line)">${r[1]}</td></tr>`).join('');
+
+/* ---------- hub, nav, hero ---------- */
+const ROOMS=[['r1','Lò tạo nguyên tử','Thêm proton, neutron, electron; xem nguyên tử “biến” thành nguyên tố khác. 6 nhiệm vụ.','01','p+',['m0','m1','m2','m3','m4','m5']],
+ ['r2','Xếp thẻ nguyên tử','12 tấm thẻ (p, n) của SGK – xếp nguyên tử cùng nguyên tố vào một ô.','02','(p,n)',['sort']],
+ ['r3','Xưởng kí hiệu','Ghép chữ viết kí hiệu hoá học, soát lỗi kí hiệu viết sai.','03','Na',['sym','spot']],
+ ['r4','Bộ sưu tập 20 nguyên tố','Lật thẻ ghép tên – kí hiệu, nghe và đọc tên 20 nguyên tố, bảng 20 nguyên tố đầu tiên.','04','20',['mem','listen']],
+ ['r5','Nguyên tố quanh em','Nguyên tố trong cơ thể em theo cân nặng; nguyên tố trong đồ vật quen thuộc.','05','O',['around']],
+ ['r6','Thử thách & chứng nhận','8 câu hỏi tính giờ, nhận giấy chứng nhận Nhà hoá học nhí.','06','★',['quiz']]];
+function renderHub(){$('#hubRooms').innerHTML=ROOMS.map(r=>{const got=r[5].filter(k=>badges[k]).length;return `<button class="panel room" data-go="${r[0]}"><span class="t"><small>${r[3]}</small><b>${r[4]}</b></span><span><h3>${r[1]}</h3><p>${r[2]}</p><span class="st">★ ${got}/${r[5].length}</span></span></button>`}).join('');$$('#hubRooms .room').forEach(b=>b.onclick=()=>go(b.dataset.go))}
+$('#nav').innerHTML=[['hub','00','Phòng chờ'],...ROOMS.map(r=>[r[0],r[3],r[1]]),['info','ⓘ','Thông tin học liệu']].map(r=>`<button data-go="${r[0]}"><span class="n">${r[1]}</span>${r[2]}</button>`).join('');
+$$('#nav button').forEach(b=>b.onclick=()=>{ac();go(b.dataset.go)});
+function go(v){$$('.view').forEach(x=>x.hidden=x.id!=='v-'+v);$$('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===v));if(v==='r1')renderForge();if(v==='r6'&&qi===0)qRender();if(v!=='r6')clearInterval(qt);try{history.replaceState(null,'','#'+v)}catch(e){}}
+const HZ=[1,2,6,8,11,18,20];let hz=0;
+function hero(){const z=HZ[hz%HZ.length];const nn={1:0,2:2,6:6,8:8,11:12,18:22,20:20}[z];$('#heroAtom').innerHTML=atomSVG(z,nn,z,true,'h');const E=EL[z-1];$('#heroName').innerHTML=`<span style="color:var(--p)">${z} proton</span> → <span style="color:var(--mint)">${cap(E[1])} (${E[0]})</span>`;hz++}
+hero();if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(()=>{if(!$('#v-hub').hidden)hero()},2800);
+renderHub();const h=(location.hash||'').slice(1);go(['hub','r1','r2','r3','r4','r5','r6','info'].includes(h)?h:'hub');
+})();
+</script>
+
+<!-- ===== TRỢ GIẢNG AI – LÒ NGUYÊN TỐ (dán ngay TRƯỚC thẻ </body> trong index.html) ===== -->
+<style>
+#tgai-btn{position:fixed;right:18px;bottom:18px;z-index:99999;display:flex;align-items:center;gap:8px;padding:12px 18px;border:none;border-radius:999px;background:linear-gradient(135deg,#2dd4bf,#0ea5e9);color:#04221f;font:700 15px/1 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer;box-shadow:0 8px 24px rgba(45,212,191,.35)}
+#tgai-btn:hover{transform:translateY(-2px)}
+#tgai-box{position:fixed;right:18px;bottom:78px;z-index:99999;width:370px;max-width:calc(100vw - 32px);height:520px;max-height:calc(100vh - 110px);display:none;flex-direction:column;background:#0b1f24;border:1px solid #1f4a4f;border-radius:20px;box-shadow:0 18px 50px rgba(0,0,0,.5);font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#e6fffb;overflow:hidden}
+#tgai-box.open{display:flex}
+#tgai-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#0f2c32;border-bottom:1px solid #1f4a4f}
+#tgai-head b{font-size:15px}
+#tgai-head small{display:block;font-size:12px;color:#8fbfba;font-weight:400}
+#tgai-x{background:none;border:none;color:#8fbfba;font-size:22px;cursor:pointer}
+#tgai-log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.tgai-b{padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.5;max-width:88%;white-space:pre-wrap}
+.tgai-a{align-self:flex-start;background:#133a40;border-bottom-left-radius:4px}
+.tgai-u{align-self:flex-end;background:#2dd4bf;color:#04221f;border-bottom-right-radius:4px}
+#tgai-chips{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 8px}
+.tgai-c{border:1px solid #1f4a4f;background:transparent;color:#bdf5ec;border-radius:999px;padding:5px 10px;font:13px 'Be Vietnam Pro',system-ui,sans-serif;cursor:pointer}
+#tgai-f{display:flex;gap:8px;padding:10px 12px;border-top:1px solid #1f4a4f}
+#tgai-q{flex:1;min-width:0;background:#0f2c32;border:1px solid #1f4a4f;border-radius:12px;padding:10px;color:#e6fffb;font:15px 'Be Vietnam Pro',system-ui,sans-serif}
+#tgai-send{border:none;border-radius:12px;padding:0 14px;background:#2dd4bf;color:#04221f;font-weight:700;cursor:pointer}
+#tgai-rule{font-size:11.5px;color:#8fbfba;padding:0 12px 10px}
+</style>
+
+<button id="tgai-btn" aria-label="Mở trợ giảng AI">🤖 Hỏi trợ giảng AI</button>
+<div id="tgai-box" role="dialog" aria-label="Trợ giảng AI">
+  <div id="tgai-head"><div><b>🤖 Trợ giảng AI</b><small>KHTN 7 · Bài 3: Nguyên tố hoá học</small></div><button id="tgai-x" aria-label="Đóng">×</button></div>
+  <div id="tgai-log"><div class="tgai-b tgai-a">Chào em! Mình là trợ giảng AI của Lò Nguyên Tố. Em hỏi gì về nguyên tố hoá học cũng được. Mình sẽ gợi ý để em tự tìm ra đáp án nhé 😊</div></div>
+  <div id="tgai-chips">
+    <button class="tgai-c">Nguyên tố hoá học là gì?</button>
+    <button class="tgai-c">Cách viết kí hiệu hoá học?</button>
+    <button class="tgai-c">Cơ thể em có nguyên tố nào?</button>
+  </div>
+  <div id="tgai-f"><input id="tgai-q" maxlength="300" placeholder="Nhập câu hỏi của em…"><button id="tgai-send">Gửi</button></div>
+  <div id="tgai-rule">🛡️ Hỏi để hiểu, không hỏi để chép · Không ghi thông tin cá nhân · AI có thể sai, hãy kiểm tra với SGK và thầy cô.</div>
+</div>
+
+<script>
+(function(){
+  var box=document.getElementById('tgai-box'),log=document.getElementById('tgai-log'),inp=document.getElementById('tgai-q'),hist=[],busy=false;
+  document.getElementById('tgai-btn').onclick=function(){box.classList.toggle('open');if(box.classList.contains('open'))inp.focus()};
+  document.getElementById('tgai-x').onclick=function(){box.classList.remove('open')};
+  function add(t,who){var d=document.createElement('div');d.className='tgai-b '+who;d.textContent=t;log.appendChild(d);log.scrollTop=log.scrollHeight;return d}
+  function where(){
+    var t='',c=document.querySelectorAll('[id^="v-"]');
+    for(var i=0;i<c.length;i++){if(!c[i].hidden&&c[i].offsetParent!==null){t=c[i].innerText.trim().replace(/\s+/g,' ').slice(0,200);break}}
+    return 'Học sinh đang dùng học liệu "Lò Nguyên Tố" (KHTN 7, Bài 3).'+(t?' Phòng đang mở: "'+t+'".':'');
+  }
+  async function ask(text){
+    var q=(text||inp.value).trim(); if(!q||busy)return; inp.value=''; busy=true;
+    add(q,'tgai-u'); var w=add('Trợ giảng đang suy nghĩ…','tgai-a');
+    try{
+      var r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q,context:where(),history:hist.slice(-6)})});
+      var j=await r.json(); if(!r.ok||!j.reply)throw 0;
+      w.textContent=j.reply; hist.push({role:'user',text:q},{role:'ai',text:j.reply});
+    }catch(e){w.textContent='Trợ giảng AI đang tạm nghỉ. Em thử lại sau hoặc hỏi thầy cô nhé!'}
+    busy=false;
+  }
+  document.getElementById('tgai-send').onclick=function(){ask()};
+  inp.addEventListener('keydown',function(e){if(e.key==='Enter')ask()});
+  document.querySelectorAll('.tgai-c').forEach(function(b){b.onclick=function(){ask(b.textContent)}});
+})();
+</script>
+<!-- ===== HẾT ĐOẠN TRỢ GIẢNG AI ===== -->
