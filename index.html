@@ -519,9 +519,14 @@ renderHub();const h=(location.hash||'').slice(1);go(['hub','r1','r2','r3','r4','
 #tgai-q{flex:1;min-width:0;background:#0f2c32;border:1px solid #1f4a4f;border-radius:12px;padding:10px;color:#e6fffb;font:15px 'Be Vietnam Pro',system-ui,sans-serif}
 #tgai-send{border:none;border-radius:12px;padding:0 14px;background:#2dd4bf;color:#04221f;font-weight:700;cursor:pointer}
 #tgai-rule{font-size:11.5px;color:#8fbfba;padding:0 12px 10px}
+@media(max-width:600px){#tgai-btn .tgai-t{display:none}#tgai-btn{padding:14px;font-size:22px}}
+/* Khi trang được nhúng (Google Site): nút thành thanh ở đầu trang, khung chat mở ngay bên dưới */
+.tgai-embed #tgai-btn{position:relative;right:auto;bottom:auto;width:calc(100% - 24px);margin:10px 12px 0;justify-content:center;padding:12px 18px;font-size:15px}
+.tgai-embed #tgai-btn .tgai-t{display:inline}
+.tgai-embed #tgai-box{position:absolute;top:66px;bottom:auto;right:12px;height:500px;max-height:none}
 </style>
 
-<button id="tgai-btn" aria-label="Mở trợ giảng AI">🤖 Hỏi trợ giảng AI</button>
+<button id="tgai-btn" aria-label="Mở trợ giảng AI">🤖<span class="tgai-t"> Hỏi trợ giảng AI</span></button>
 <div id="tgai-box" role="dialog" aria-label="Trợ giảng AI">
   <div id="tgai-head"><div><b>🤖 Trợ giảng AI</b><small>KHTN 7 · Bài 3: Nguyên tố hoá học</small></div><button id="tgai-x" aria-label="Đóng">×</button></div>
   <div id="tgai-log"><div class="tgai-b tgai-a">Chào em! Mình là trợ giảng AI của Lò Nguyên Tố. Em hỏi gì về nguyên tố hoá học cũng được. Mình sẽ gợi ý để em tự tìm ra đáp án nhé 😊</div></div>
@@ -536,6 +541,9 @@ renderHub();const h=(location.hash||'').slice(1);go(['hub','r1','r2','r3','r4','
 
 <script>
 (function(){
+  // Đang nằm trong khung nhúng (Google Site)? -> đưa nút lên đầu trang để luôn nhìn thấy
+  var inFrame=false;try{inFrame=window.self!==window.top}catch(e){inFrame=true}
+  if(inFrame){document.documentElement.classList.add('tgai-embed');var bt=document.getElementById('tgai-btn');document.body.insertBefore(bt,document.body.firstChild);document.body.style.position='relative';document.body.appendChild(document.getElementById('tgai-box'))}
   var box=document.getElementById('tgai-box'),log=document.getElementById('tgai-log'),inp=document.getElementById('tgai-q'),hist=[],busy=false;
   document.getElementById('tgai-btn').onclick=function(){box.classList.toggle('open');if(box.classList.contains('open'))inp.focus()};
   document.getElementById('tgai-x').onclick=function(){box.classList.remove('open')};
